@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The City Pulse | Opportunity Engine</title>
+    <style>
+        /* CSS Reset & Base Variables */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            /* Vibrant background for the glass effect to pop */
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Ambient background blobs */
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+        }
+        .blob-1 { width: 300px; height: 300px; background: #00f2fe; top: 10%; left: 20%; }
+        .blob-2 { width: 400px; height: 400px; background: #4facfe; bottom: 10%; right: 10%; }
+
+        /* The Glassmorphism Container */
+        .glass-container {
+            width: 100%;
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.05); /* Translucent background */
+            backdrop-filter: blur(16px); /* The frosted glass blur */
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            background: -webkit-linear-gradient(#fff, #a1c4fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-scan {
+            display: block;
+            margin: 0 auto 30px;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .btn-scan:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Results Grid */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 25px;
+            transition: transform 0.3s;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .match-score {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            background: rgba(0, 242, 254, 0.2);
+            color: #00f2fe;
+            border: 1px solid rgba(0, 242, 254, 0.3);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .funding-amount {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: #a1c4fd;
+        }
+
+        #loading {
+            text-align: center;
+            display: none;
+            font-style: italic;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="glass-container">
+        <header>
+            <h1>The City Pulse</h1>
+            <p>Startup DNA Opportunity Engine</p>
+        </header>
+
+        <button class="btn-scan" onclick="runOpportunityEngine(1)">Let's Start</button>
+        
+        <p id="loading">Scanning city infrastructure grids...</p>
+
+        <div class="results-grid" id="resultsContainer">
+            </div>
+    </div>
+
+    <script>
+        async function runOpportunityEngine(startupId) {
+            const container = document.getElementById('resultsContainer');
+            const loading = document.getElementById('loading');
+            const button = document.querySelector('.btn-scan');
+            
+            container.innerHTML = ''; // Clear previous
+            loading.style.display = 'block';
+            button.disabled = true;
+
+            try {
+                // Fetching from our local Node.js server
+                const response = await fetch(`http://localhost:3000/api/matches/${startupId}`);
+                
+                if (!response.ok) throw new Error('Failed to fetch data');
+                
+                const data = await response.json();
+                
+                // Add a slight delay for dramatic UX effect
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                    renderMatches(data.matches);
+                    button.innerText = `Re-Scan ${data.startup.name}`;
+                    button.disabled = false;
+                }, 800);
+
+            } catch (error) {
+                loading.style.display = 'none';
+                button.disabled = false;
+                container.innerHTML = `<p style="color: #ff6b6b; text-align:center;">Connection to City Pulse Server failed. Ensure backend is running.</p>`;
+                console.error(error);
+            }
+        }
+
+        function renderMatches(matches) {
+            const container = document.getElementById('resultsContainer');
+            
+            if (matches.length === 0) {
+                container.innerHTML = '<p style="text-align:center;">No high-confidence matches found currently.</p>';
+                return;
+            }
+
+            matches.forEach(match => {
+                const card = document.createElement('div');
+                card.className = 'glass-card';
+                card.innerHTML = `
+                    <div class="match-score">${match.matchScore}% Compatibility</div>
+                    <h3 class="card-title">${match.title}</h3>
+                    <div class="funding-amount">Up to $${Number(match.funding_amount).toLocaleString()}</div>
+                    <p style="font-size: 0.9rem; margin-top: 15px; opacity: 0.8; cursor: pointer;">One-Click Apply ➔</p>
+                `;
+                container.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
