@@ -1,0 +1,14 @@
+{
+  "name": "city-pulse-engine",
+  "version": "1.0.0",
+  "description": "Monolithic backend for The City Pulse Opportunity Engine",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "mysql2": "^3.9.0"
+  }
+}
